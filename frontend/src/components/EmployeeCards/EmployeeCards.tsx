@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Card, { CardInfo } from '../Card/Card';
 import styles from './employeecards.module.css';
 import { clock, phone, wheel, user } from '../../icons/userInfo/index';
-import { Employee, AvailabilityType, Admin } from '../../types';
+import { Employee, Admin } from '../../types';
 import { useEmployees } from '../../context/EmployeesContext';
 import formatAvailability from '../../util/employee';
 
@@ -29,6 +29,7 @@ const EmployeeCard = ({
     availability,
     admin,
     photoLink,
+    startDate,
   },
 }: EmployeeCardProps) => {
   const netId = email.split('@')[0];
@@ -52,6 +53,7 @@ const EmployeeCard = ({
     availability: fmtAvailability,
     admin,
     photoLink,
+    startDate,
   };
 
   return (
@@ -61,29 +63,30 @@ const EmployeeCard = ({
         : `/drivers/${userInfo.id}`,
       state: userInfo,
     }}
-      style={{ textDecoration: 'none', color: 'inherit' }}>
+      style={{ textDecoration: 'none', color: 'inherit' }}
+      className={styles.link}>
       <Card
         firstName={firstName}
         lastName={lastName}
         netId={netId}
         photoLink={photoLink}
       >
-        <CardInfo icon={phone} alt="phone icon">
+        <CardInfo icon={phone} alt="phone">
           <p>{fmtPhone}</p>
         </CardInfo>
 
-        <CardInfo icon={clock} alt="clock icon">
+        <CardInfo icon={clock} alt="clock">
           <div>
             {fmtAvailability
               ? fmtAvailability.map(([day, timeRange]) => (
-                <p key={day}><b>{day}:</b> {timeRange}</p>
+                <p key={day}><span className={styles.dayText}>{day}:</span> {timeRange}</p>
               )) : <p>N/A</p>}
           </div>
         </CardInfo>
 
         <CardInfo
           icon={isAdmin || isBoth ? user : wheel}
-          alt={isAdmin || isBoth ? 'admin icon' : 'wheel icon'}
+          alt={isAdmin || isBoth ? 'admin' : 'wheel'}
         >
           <p>{role()}</p>
         </CardInfo>

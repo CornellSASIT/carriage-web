@@ -60,7 +60,6 @@ const RideModal = ({
   };
 
   const saveDataThen = (next: () => void) => (data: ObjectType) => {
-    console.log(data);
     setFormData((prev) => ({ ...prev, ...data }));
     next();
   };
@@ -74,82 +73,52 @@ const RideModal = ({
         pickupTime,
         dropoffTime,
         recurring,
+        recurringDays,
         driver,
         rider,
         startLocation,
-        endLocation
+        endLocation,
       } = formData;
       const startTime = moment(`${date} ${pickupTime}`).toISOString();
       const endTime = moment(`${date} ${dropoffTime}`).toISOString();
-      if (recurring === "Does Not Repeat" || recurring === "Custom") {
-        const rideData: ObjectType = {
-          recurring,
-          startTime,
-          endTime,
-          driver,
-          rider,
-          startLocation,
-          endLocation
-        };
-        formData.recurring = false;
-        if (ride) {
-          if (ride.type === 'active') {
-            rideData.type = 'unscheduled';
-          }
-          fetch(
-            `/api/rides/${ride.id}`,
-            withDefaults({
-              method: 'PUT',
-              body: JSON.stringify(rideData),
-            }),
-          );
-        } else {
-          fetch(
-            '/api/rides',
-            withDefaults({
-              method: 'POST',
-              body: JSON.stringify(formData),
-            }),
-          );
-        }
-      } else {
-        const recurringDays = recurring === "Daily" ? [1,2,3,4,5,6,7] : [6]
-        formData.recurring = true
-        const rideData: ObjectType = {
-          recurring: true,
-          recurringDays,
-          startTime,
-          endTime,
-          driver,
-          rider,
-          startLocation,
-          endLocation
-        };
-        if (ride) {
-          if (ride.type === 'active') {
-            rideData.type = 'unscheduled';
-          }
-          fetch(
-            `/api/rides/${ride.id}`,
-            withDefaults({
-              method: 'PUT',
-              body: JSON.stringify(rideData),
-            }),
-          );
-        } else {
-          fetch(
-            '/api/rides',
-            withDefaults({
-              method: 'POST',
-              body: JSON.stringify(formData),
-            }),
-          ).then((response) => console.log("hello" + response))
-        }
+      const hasDriver = Boolean(driver) && driver !== 'None';
+      const rideData: ObjectType = {
+        type: hasDriver ? 'active' : 'unscheduled',
+        startTime,
+        endTime,
+        driver: hasDriver ? driver : undefined,
+        rider,
+        startLocation,
+        endLocation,
+      };
+      if (recurring !== 'Does Not Repeat') {
+        rideData.recurring = true;
+        rideData.recurringDays = recurringDays;
       }
-      setIsSubmitted(false);
-      closeModal();
-      setToast(true);
+      if (ride) {
+        if (ride.type === 'active') {
+          rideData.type = 'unscheduled';
+        }
+        fetch(
+          `/api/rides/${ride.id}`,
+          withDefaults({
+            method: 'PUT',
+            body: JSON.stringify(rideData),
+          }),
+        );
+      } else {
+        fetch(
+          '/api/rides',
+          withDefaults({
+            method: 'POST',
+            body: JSON.stringify(rideData),
+          }),
+        );
+      }
     }
+    setIsSubmitted(false);
+    closeModal();
+    setToast(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData, isSubmitted, ride, withDefaults]);
 
