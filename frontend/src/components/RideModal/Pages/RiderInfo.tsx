@@ -22,6 +22,7 @@ const RiderInfoPage = ({ formData, onBack, onSubmit }: ModalPageProps) => {
   const { withDefaults } = useReq();
   const locations = Object.keys(locationToId).sort();
   const { riders } = useRiders();
+  
 
   const beforeSubmit = ({ name, pickupLoc, dropoffLoc }: ObjectType) => {
     console.log("attempting")

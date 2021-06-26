@@ -74,53 +74,55 @@ const RideModal = ({
         dropoffTime,
         recurring,
         recurringDays,
+        recurringEndDate,
         driver,
         rider,
         startLocation,
         endLocation,
       } = formData;
-      const startTime = moment(`${date} ${pickupTime}`).toISOString();
-      const endTime = moment(`${date} ${dropoffTime}`).toISOString();
-      const hasDriver = Boolean(driver) && driver !== 'None';
-      const rideData: ObjectType = {
-        type: hasDriver ? 'active' : 'unscheduled',
-        startTime,
-        endTime,
-        driver: hasDriver ? driver : undefined,
-        rider,
-        startLocation,
-        endLocation,
-      };
-      if (recurring !== 'Does Not Repeat') {
-        rideData.recurring = true;
-        rideData.recurringDays = recurringDays;
-      }
-      if (ride) {
-        if (ride.type === 'active') {
-          rideData.type = 'unscheduled';
-        }
-        fetch(
-          `/api/rides/${ride.id}`,
-          withDefaults({
-            method: 'PUT',
-            body: JSON.stringify(rideData),
-          }),
-        );
-      } else {
-        fetch(
-          '/api/rides',
-          withDefaults({
-            method: 'POST',
-            body: JSON.stringify(rideData),
-          }),
-        );
-      }
+      console.log(formData);
+      // const startTime = moment(`${date} ${pickupTime}`).toISOString();
+      // const endTime = moment(`${date} ${dropoffTime}`).toISOString();
+      // const hasDriver = Boolean(driver) && driver !== 'None';
+      // const rideData: ObjectType = {
+      //   type: hasDriver ? 'active' : 'unscheduled',
+      //   startTime,
+      //   endTime,
+      //   driver: hasDriver ? driver : undefined,
+      //   rider,
+      //   startLocation,
+      //   endLocation,
+      // };
+      // if (recurring !== 'Does Not Repeat') {
+      //   rideData.recurring = true;
+      //   rideData.recurringDays = recurringDays;
+      // }
+      // if (ride) {
+      //   if (ride.type === 'active') {
+      //     rideData.type = 'unscheduled';
+      //   }
+      //   fetch(
+      //     `/api/rides/${ride.id}`,
+      //     withDefaults({
+      //       method: 'PUT',
+      //       body: JSON.stringify(rideData),
+      //     }),
+      //   );
+      // } else {
+      //   fetch(
+      //     '/api/rides',
+      //     withDefaults({
+      //       method: 'POST',
+      //       body: JSON.stringify(rideData),
+      //     }),
+      //   );
+      // }
     }
     setIsSubmitted(false);
     closeModal();
     setToast(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData, isSubmitted, ride, withDefaults]);
+  }, [ isSubmitted ]);
 
   // have to do a ternary operator on the entire modal
   // because otherwise the pages would show up wrongly
