@@ -22,10 +22,10 @@ const RiderInfoPage = ({ formData, onBack, onSubmit }: ModalPageProps) => {
   const { withDefaults } = useReq();
   const locations = Object.keys(locationToId).sort();
   const { riders } = useRiders();
-  
+
 
   const beforeSubmit = ({ name, pickupLoc, dropoffLoc }: ObjectType) => {
-    console.log("attempting")
+    console.log('attempting');
     const rider = nameToId[name.toLowerCase()];
     const startLocation = locationToId[pickupLoc] ?? pickupLoc;
     const endLocation = locationToId[dropoffLoc] ?? dropoffLoc;
@@ -55,7 +55,7 @@ const RiderInfoPage = ({ formData, onBack, onSubmit }: ModalPageProps) => {
     <form onSubmit={handleSubmit(beforeSubmit)} className={styles.form}>
       <div className={cn(styles.inputContainer, styles.rider)}>
         <div className={styles.name}>
-          <SRLabel htmlFor={"name"}>Name</SRLabel>
+          <SRLabel htmlFor={'name'}>Name</SRLabel>
           <Input
             id="name"
             name="name"
@@ -74,7 +74,7 @@ const RiderInfoPage = ({ formData, onBack, onSubmit }: ModalPageProps) => {
           </datalist>
         </div>
         <div className={styles.pickupLocation}>
-        <SRLabel htmlFor={"pickupLoc"}>Pickup Location</SRLabel>
+          <SRLabel htmlFor={'pickupLoc'}>Pickup Location</SRLabel>
           <Input
             id="pickupLoc"
             name="pickupLoc"
@@ -89,7 +89,7 @@ const RiderInfoPage = ({ formData, onBack, onSubmit }: ModalPageProps) => {
           </datalist>
         </div>
         <div className={styles.dropoffLocation}>
-          <SRLabel htmlFor={"dropoffLoc"}>Dropoff Location</SRLabel>
+          <SRLabel htmlFor={'dropoffLoc'}>Dropoff Location</SRLabel>
           <Input
             id="dropoffLoc"
             name="dropoffLoc"
@@ -117,7 +117,7 @@ const RiderInfoPage = ({ formData, onBack, onSubmit }: ModalPageProps) => {
       </div >
       <div className={styles.btnContainer}>
         <Button outline type="button" onClick={onBack}>Back</Button>
-        <Button type="submit">{formData?.rider ? 'Edit a Ride' : 'Add a Ride'}</Button>
+        <Button type="submit">{formData?.rider ? 'Edit Ride' : 'Add a Ride'}</Button>
       </div>
     </form >
   );

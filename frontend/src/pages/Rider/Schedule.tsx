@@ -30,11 +30,11 @@ const Schedule = () => {
       <div className={styles.pageTitle}>
         <h1 className={styles.header}>Hi {user?.firstName ?? ''}</h1>
         <div className={styles.rightSection}>
-          <RequestRideModal afterSubmit={refreshRides} />
+          <RequestRideModal onSubmit={refreshRides} />
           <Notification />
         </div>
       </div>
-      {(rides && rides.length) && (
+      {(rides && rides.length > 0) && (
         <>
           <Collapsible title={'Your Upcoming Rides'}>
             <RiderScheduleTable data={rides} isPast={false} />
