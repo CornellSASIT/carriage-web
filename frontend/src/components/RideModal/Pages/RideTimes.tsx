@@ -12,14 +12,12 @@ import { useWeek } from '../../EmployeeModal/WeekContext';
 
 type AvailabilityInputProps = {
   index: number;
-  isRequired: boolean;
   existingTimeRange?: string;
   existingDayArray?: string[];
 }
 
 const AvailabilityInput = ({
   index,
-  isRequired,
   existingDayArray,
 }: AvailabilityInputProps) => {
   const {
@@ -95,7 +93,9 @@ const AvailabilityInput = ({
             />
           ))}
         </div>
-        {errors.recurringDays && <p className={cn(styles.error, styles.dayError)}>Please select at least one day</p>}
+        {errors.recurringDays && (
+          <p className={cn(styles.error, styles.dayError)}>Please select at least one day</p>
+        )}
       </div>
     </div>
   );
@@ -170,7 +170,6 @@ const RideTimesPage = ({ formData, onSubmit }: ModalPageProps) => {
               <AvailabilityInput
                 key={0}
                 index={0}
-                isRequired={isCustomRepeating}
                 existingDayArray={formData?.recurringDays}
               />
               <div className={styles.endsContainer}>
