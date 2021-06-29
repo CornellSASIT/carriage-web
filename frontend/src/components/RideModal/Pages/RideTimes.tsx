@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useForm, useFormContext, FormProvider } from 'react-hook-form';
 import cn from 'classnames';
 import moment from 'moment';
@@ -8,46 +8,41 @@ import styles from '../ridemodal.module.css';
 import { useDate } from '../../../context/date';
 import { ObjectType } from '../../../types/index';
 
-import { WeekProvider, useWeek } from '../../EmployeeModal/WeekContext';
+import { useWeek } from '../../EmployeeModal/WeekContext';
 
 type AvailabilityInputProps = {
   index: number;
+  isRequired: boolean;
   existingTimeRange?: string;
   existingDayArray?: string[];
 }
 
 const AvailabilityInput = ({
   index,
+  isRequired,
   existingDayArray,
 }: AvailabilityInputProps) => {
   const {
     selectDay,
     deselectDay,
-    isDayOpen,
     isDaySelectedByInstance,
     getSelectedDays,
   } = useWeek();
-  const { setValue, formState } = useFormContext();
+  const { register, setValue, formState, unregister } = useFormContext();
   const { errors } = formState;
-  const dayLabels = {
-    Sun: 'S',
+  const dayLabels: ObjectType = {
     Mon: 'M',
     Tue: 'T',
     Wed: 'W',
     Thu: 'T',
     Fri: 'F',
-    Sat: 'S',
   };
-  const [existingTime, setExisingTime] = useState<string[]>();
-
-  // All data for this AvailabilityInput instance will be saved in the form's
-  // data in an array 'availability' at index 'index'
-  const instance = `recurringDays[${index}]`;
+  const fieldName = 'recurringDays';
   const days = getSelectedDays(index);
   const handleClick = (day: string) => {
     if (isDaySelectedByInstance(day, index)) {
       deselectDay(day);
-    } else if (isDayOpen(day)) {
+    } else {
       selectDay(day, index);
     }
   };
@@ -59,15 +54,27 @@ const AvailabilityInput = ({
   };
 
   useEffect(() => {
+    // Clear previously selected
+    if (days.length) {
+      days.forEach(deselectDay);
+    }
+    // Register input
+    register(fieldName, {
+      validate: (recurringDays) => Boolean(recurringDays?.length),
+    });
     // Prefill days and time range once
     prefillDays();
+    // On unmount, unregister recurringDays and endDate
+    return () => {
+      unregister([fieldName, 'endDate']);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     // When selected days changes, update days value
-    setValue(`${instance}.days`, days);
-  }, [instance, days, setValue]);
+    setValue(fieldName, days);
+  }, [days, setValue]);
 
   return (
     <div className={styles.availabilityInput}>
@@ -77,7 +84,7 @@ const AvailabilityInput = ({
           {Object.entries(dayLabels).map(([day, label]) => (
             <Input
               key={day}
-              name={`${instance}.days`}
+              name={fieldName}
               type="button"
               value={label}
               className={cn(
@@ -88,10 +95,7 @@ const AvailabilityInput = ({
             />
           ))}
         </div>
-        {errors.availability && errors.availability[index]
-          && errors.availability[index].days
-          && <p className={cn(styles.error, styles.dayError)}>Please select at least one day</p>
-        }
+        {errors.recurringDays && <p className={cn(styles.error, styles.dayError)}>Please select at least one day</p>}
       </div>
     </div>
   );
@@ -99,149 +103,146 @@ const AvailabilityInput = ({
 
 const RideTimesPage = ({ formData, onSubmit }: ModalPageProps) => {
   const { curDate } = useDate();
-  const [availabilityArray, setAvailabilityArray] = useState<any[]>(['a']);
-  const { register, formState, handleSubmit, getValues, watch } = useForm({
+  const methods = useForm({
     defaultValues: {
       date: formData?.date ?? moment(curDate).format('YYYY-MM-DD'),
       pickupTime: formData?.pickupTime ?? '',
       dropoffTime: formData?.dropoffTime ?? '',
       recurring: formData?.recurring ?? '',
+      endDate: formData?.endDate ?? '',
     },
   });
+  const { register, formState, handleSubmit, getValues, watch } = methods;
   const { errors } = formState;
   const watchDate = watch('date');
-  const [customRepeat, setCustomRepeat] = useState(false);
-  const methods = useForm();
+  const watchCustomRepeat = watch('recurring');
+  const isCustomRepeating = watchCustomRepeat === 'Custom';
 
-  const repeatingSelect = (event: ChangeEvent<HTMLSelectElement>) => {
-    if (event.target.value === 'Custom') {
-      setCustomRepeat(true);
-    } else if (event.target.value !== 'Custom' && customRepeat === true) {
-      setCustomRepeat(false);
-    }
-  };
+  console.log(errors);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-      <div className={cn(styles.inputContainer, styles.rideTime)}>
-        <div className={styles.date}>
-          <Label htmlFor="date">Date:</Label>
-          <Input
-            id="date"
-            type="date"
-            name="date"
-            ref={register({
-              required: true,
-              validate: (date) => {
-                const fmtDate = moment(date).format('YYYY-MM-DD');
-                const fmtCurr = moment().format('YYYY-MM-DD');
-                return fmtDate >= fmtCurr;
-              },
-            })}
-          />
-          {errors.date?.type === 'required' && (
-            <p className={styles.error}>Please enter a date</p>
-          )}
-          {errors.date?.type === 'validate' && (
-            <p className={styles.error}>Invalid date</p>
-          )}
-        </div>
-        <div className={styles.repeating}>
-          <Select className={styles.repeatingSelect}
-            name="recurring"
-            ref={register({ required: true })}
-            onChange={repeatingSelect}>
-            <option value="Does Not Repeat" className={styles.repeatingOption} selected>
-              Does Not Repeat
-            </option>
-            <option value="Daily" className={styles.repeatingOption}>
-              Daily
-            </option>
-            <option value="Weekly" className={styles.repeatingOption}>
-              Weekly on {moment(watchDate).format('dddd')}
-            </option>
-            <option value="Custom" className={styles.repeatingOption}>
-              Custom
-            </option>
-          </Select>
-        </div>
-        {customRepeat
-          && <div className={styles.customRepeatContainer}>
-            <WeekProvider>
+    <FormProvider {...methods}>
+      <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+        <div className={cn(styles.inputContainer, styles.rideTime)}>
+          <div className={styles.date}>
+            <Label htmlFor="date">Date:</Label>
+            <Input
+              id="date"
+              type="date"
+              name="date"
+              ref={register({
+                required: true,
+                validate: (date) => {
+                  const fmtDate = moment(date).format('YYYY-MM-DD');
+                  const fmtCurr = moment().format('YYYY-MM-DD');
+                  return fmtDate >= fmtCurr;
+                },
+              })}
+            />
+            {errors.date?.type === 'required' && (
+              <p className={styles.error}>Please enter a date</p>
+            )}
+            {errors.date?.type === 'validate' && (
+              <p className={styles.error}>Invalid date</p>
+            )}
+          </div>
+          <div className={styles.repeating}>
+            <Select className={styles.repeatingSelect}
+              name="recurring"
+              ref={register({ required: true })}
+            >
+              <option value="Does Not Repeat" className={styles.repeatingOption} selected>
+                Does Not Repeat
+              </option>
+              <option value="Daily" className={styles.repeatingOption}>
+                Daily
+              </option>
+              <option value="Weekly" className={styles.repeatingOption}>
+                Weekly on {moment(watchDate).format('dddd')}
+              </option>
+              <option value="Custom" className={styles.repeatingOption}>
+                Custom
+              </option>
+            </Select>
+          </div>
+          {isCustomRepeating && (
+            <div className={styles.customRepeatContainer}>
               <AvailabilityInput
                 key={0}
                 index={0}
-                existingDayArray={dayArray}
+                isRequired={isCustomRepeating}
+                existingDayArray={formData?.recurringDays}
               />
-            </WeekProvider>
-            <div className={styles.endsContainer}>
-              <Label htmlFor="recurringEndDate">Ends:</Label>
-              <Input
-                id="date"
-                type="date"
-                name="recurringEndDate"
-                ref={register({
-                  required: true,
-                  validate: (date) => {
-                    const fmtDate = moment(date).format('YYYY-MM-DD');
-                    const fmtCurr = moment().format('YYYY-MM-DD');
-                    return fmtDate >= fmtCurr;
-                  },
-                })}
-              />
-              {errors.date?.type === 'required' && (
-                <p className={styles.error}>Please enter a date</p>
-              )}
-              {errors.date?.type === 'validate' && (
-                <p className={styles.error}>Invalid date</p>
-              )}
+              <div className={styles.endsContainer}>
+                <Label htmlFor="endDate">Ends:</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  name="endDate"
+                  ref={register({
+                    required: isCustomRepeating,
+                    validate: (date) => {
+                      const fmtDate = moment(date).format('YYYY-MM-DD');
+                      const fmtCurr = moment().format('YYYY-MM-DD');
+                      return fmtDate >= fmtCurr;
+                    },
+                  })}
+                />
+                {errors.endDate?.type === 'required' && (
+                  <p className={styles.error}>Please enter a date</p>
+                )}
+                {errors.endDate?.type === 'validate' && (
+                  <p className={styles.error}>Invalid date</p>
+                )}
+              </div>
             </div>
-          </div>}
-        <div className={styles.pickupTime}>
-          <Label htmlFor="pickupTime">Pickup time:</Label>
-          <Input
-            id="pickupTime"
-            type="time"
-            name="pickupTime"
-            ref={register({
-              required: true,
-              validate: (pickupTime) => {
-                const date = getValues('date');
-                return moment().isBefore(moment(`${date} ${pickupTime}`));
-              },
-            })}
-          />
-          {errors.pickupTime?.type === 'required' && (
-            <p className={styles.error}>Please enter a time</p>
           )}
-          {errors.pickupTime?.type === 'validate' && (
-            <p className={styles.error}>Invalid time</p>
-          )}
+          <div className={styles.pickupTime}>
+            <Label htmlFor="pickupTime">Pickup time:</Label>
+            <Input
+              id="pickupTime"
+              type="time"
+              name="pickupTime"
+              ref={register({
+                required: true,
+                validate: (pickupTime) => {
+                  const date = getValues('date');
+                  return moment().isBefore(moment(`${date} ${pickupTime}`));
+                },
+              })}
+            />
+            {errors.pickupTime?.type === 'required' && (
+              <p className={styles.error}>Please enter a time</p>
+            )}
+            {errors.pickupTime?.type === 'validate' && (
+              <p className={styles.error}>Invalid time</p>
+            )}
+          </div>
+          <div className={styles.dropoffTime}>
+            <Label htmlFor="dropoffTime">Dropoff time:</Label>
+            <Input
+              id="dropoffTime"
+              type="time"
+              name="dropoffTime"
+              ref={register({
+                required: true,
+                validate: (dropoffTime) => {
+                  const pickupTime = getValues('pickupTime');
+                  return pickupTime < dropoffTime;
+                },
+              })}
+            />
+            {errors.dropoffTime?.type === 'required' && (
+              <p className={styles.error}>Please enter a time</p>
+            )}
+            {errors.dropoffTime?.type === 'validate' && (
+              <p className={styles.error}>Invalid time</p>
+            )}
+          </div>
         </div>
-        <div className={styles.dropoffTime}>
-          <Label htmlFor="dropoffTime">Dropoff time:</Label>
-          <Input
-            id="dropoffTime"
-            type="time"
-            name="dropoffTime"
-            ref={register({
-              required: true,
-              validate: (dropoffTime) => {
-                const pickupTime = getValues('pickupTime');
-                return pickupTime < dropoffTime;
-              },
-            })}
-          />
-          {errors.dropoffTime?.type === 'required' && (
-            <p className={styles.error}>Please enter a time</p>
-          )}
-          {errors.dropoffTime?.type === 'validate' && (
-            <p className={styles.error}>Invalid time</p>
-          )}
-        </div>
-      </div>
-      <Button type="submit">Next</Button>
-    </form>
+        <Button type="submit">Next</Button>
+      </form>
+    </FormProvider>
   );
 };
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import moment from 'moment';
+import { WeekProvider } from '../EmployeeModal/WeekContext';
 import Modal from '../Modal/Modal';
 import { Button } from '../FormElements/FormElements';
 import Toast from '../ConfirmationToast/ConfirmationToast';
@@ -127,7 +128,7 @@ const RideModal = ({
   // have to do a ternary operator on the entire modal
   // because otherwise the pages would show up wrongly
   return ride ? (
-    <>
+    <WeekProvider>
       {showingToast ? <Toast message="Ride edited." /> : null}
       <Modal
         paginate
@@ -146,9 +147,9 @@ const RideModal = ({
           onSubmit={saveDataThen(submitData)}
         />
       </Modal>
-    </>
+    </WeekProvider>
   ) : (
-    <>
+    <WeekProvider>
       {showingToast ? <Toast message="Ride added." /> : null}
       {/* only have a button if this modal is not controlled by a table */}
       {!open && <Button onClick={openModal}>+ Add ride</Button>}
@@ -174,7 +175,7 @@ const RideModal = ({
           onSubmit={saveDataThen(submitData)}
         />
       </Modal>
-    </>
+    </WeekProvider>
   );
 };
 
