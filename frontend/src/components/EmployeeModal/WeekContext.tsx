@@ -33,13 +33,11 @@ export const WeekProvider = ({ children }: WeekProviderProps) => {
   // on its index number. if a day is not selected in any AvailabilityInput
   // instance, the value is -1.
   const [week, setWeek] = useState<WeekType>({
-    Sun: -1,
     Mon: -1,
     Tue: -1,
     Wed: -1,
     Thu: -1,
     Fri: -1,
-    Sat: -1,
   });
 
   const setDay = (day: string, value: number) => {

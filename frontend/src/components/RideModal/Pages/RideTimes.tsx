@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import { useForm, useFormContext, FormProvider } from 'react-hook-form';
 import cn from 'classnames';
 import moment from 'moment';
@@ -7,7 +7,7 @@ import { Button, Input, Label, Select } from '../../FormElements/FormElements';
 import styles from '../ridemodal.module.css';
 import { useDate } from '../../../context/date';
 import { ObjectType } from '../../../types/index';
-import { useState } from 'react';
+
 import { WeekProvider, useWeek } from '../../EmployeeModal/WeekContext';
 
 type AvailabilityInputProps = {
@@ -18,7 +18,7 @@ type AvailabilityInputProps = {
 
 const AvailabilityInput = ({
   index,
-  existingDayArray
+  existingDayArray,
 }: AvailabilityInputProps) => {
   const {
     selectDay,
@@ -39,7 +39,7 @@ const AvailabilityInput = ({
     Sat: 'S',
   };
   const [existingTime, setExisingTime] = useState<string[]>();
-  
+
   // All data for this AvailabilityInput instance will be saved in the form's
   // data in an array 'availability' at index 'index'
   const instance = `recurringDays[${index}]`;
@@ -88,10 +88,10 @@ const AvailabilityInput = ({
             />
           ))}
         </div>
-        {errors.availability && errors.availability[index] && 
-            errors.availability[index].days &&  
-            <p className={cn(styles.error, styles.dayError)}>Please select at least one day</p>
-          }    
+        {errors.availability && errors.availability[index]
+          && errors.availability[index].days
+          && <p className={cn(styles.error, styles.dayError)}>Please select at least one day</p>
+        }
       </div>
     </div>
   );
@@ -119,10 +119,9 @@ const RideTimesPage = ({ formData, onSubmit }: ModalPageProps) => {
     } else if (event.target.value !== 'Custom' && customRepeat === true) {
       setCustomRepeat(false);
     }
-  }
+  };
 
   return (
-    <FormProvider {...methods} >
     <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
       <div className={cn(styles.inputContainer, styles.rideTime)}>
         <div className={styles.date}>
@@ -148,52 +147,56 @@ const RideTimesPage = ({ formData, onSubmit }: ModalPageProps) => {
           )}
         </div>
         <div className={styles.repeating}>
-          {/* <input type="text" name="recurring" /> */}
-          <Select className={styles.repeatingSelect} 
-                  name="recurring" 
-                  ref={register({ required: true })}
-                  onChange={repeatingSelect}>
-            <option value="Does Not Repeat" className={styles.repeatingOption} selected>Does Not Repeat</option>
-            <option value="Daily" className={styles.repeatingOption}>Daily</option>
-            <option value="Weekly" className={styles.repeatingOption}>Weekly on {moment(watchDate).format('dddd')}</option>
-            <option value="Custom" className={styles.repeatingOption}>Custom</option>
+          <Select className={styles.repeatingSelect}
+            name="recurring"
+            ref={register({ required: true })}
+            onChange={repeatingSelect}>
+            <option value="Does Not Repeat" className={styles.repeatingOption} selected>
+              Does Not Repeat
+            </option>
+            <option value="Daily" className={styles.repeatingOption}>
+              Daily
+            </option>
+            <option value="Weekly" className={styles.repeatingOption}>
+              Weekly on {moment(watchDate).format('dddd')}
+            </option>
+            <option value="Custom" className={styles.repeatingOption}>
+              Custom
+            </option>
           </Select>
         </div>
-        {customRepeat && 
-        <div className={styles.customRepeatContainer}>
-          <WeekProvider>
-          {availabilityArray.map(([_, dayArray], index) => (
-            <AvailabilityInput
-              key={index}
-              index={index}
-              existingDayArray={dayArray}
-            />
-          ))
-          }
-          </WeekProvider>
-          <div className={styles.endsContainer}>
-            <Label htmlFor="recurringEndDate">Ends:</Label>
-            <Input
-              id="date"
-              type="date"
-              name="recurringEndDate"
-              ref={register({
-                required: true,
-                validate: (date) => {
-                  const fmtDate = moment(date).format('YYYY-MM-DD');
-                  const fmtCurr = moment().format('YYYY-MM-DD');
-                  return fmtDate >= fmtCurr;
-                },
-              })}
-            />
-            {errors.date?.type === 'required' && (
-              <p className={styles.error}>Please enter a date</p>
-            )}
-            {errors.date?.type === 'validate' && (
-              <p className={styles.error}>Invalid date</p>
-            )}
-          </div>
-        </div>}
+        {customRepeat
+          && <div className={styles.customRepeatContainer}>
+            <WeekProvider>
+              <AvailabilityInput
+                key={0}
+                index={0}
+                existingDayArray={dayArray}
+              />
+            </WeekProvider>
+            <div className={styles.endsContainer}>
+              <Label htmlFor="recurringEndDate">Ends:</Label>
+              <Input
+                id="date"
+                type="date"
+                name="recurringEndDate"
+                ref={register({
+                  required: true,
+                  validate: (date) => {
+                    const fmtDate = moment(date).format('YYYY-MM-DD');
+                    const fmtCurr = moment().format('YYYY-MM-DD');
+                    return fmtDate >= fmtCurr;
+                  },
+                })}
+              />
+              {errors.date?.type === 'required' && (
+                <p className={styles.error}>Please enter a date</p>
+              )}
+              {errors.date?.type === 'validate' && (
+                <p className={styles.error}>Invalid date</p>
+              )}
+            </div>
+          </div>}
         <div className={styles.pickupTime}>
           <Label htmlFor="pickupTime">Pickup time:</Label>
           <Input
@@ -239,7 +242,6 @@ const RideTimesPage = ({ formData, onSubmit }: ModalPageProps) => {
       </div>
       <Button type="submit">Next</Button>
     </form>
-    </FormProvider>
   );
 };
 

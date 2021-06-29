@@ -117,12 +117,12 @@ const RideModal = ({
       //     }),
       //   );
       // }
+      setIsSubmitted(false);
+      closeModal();
+      setToast(true);
     }
-    setIsSubmitted(false);
-    closeModal();
-    setToast(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ isSubmitted ]);
+  }, [isSubmitted]);
 
   // have to do a ternary operator on the entire modal
   // because otherwise the pages would show up wrongly

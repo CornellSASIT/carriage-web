@@ -17,7 +17,7 @@ const AvailabilityInput = ({
   index,
   existingTimeRange,
   existingDayArray,
-  hide
+  hide,
 }: AvailabilityInputProps) => {
   const {
     selectDay,
@@ -29,13 +29,11 @@ const AvailabilityInput = ({
   const { register, setValue, getValues, formState } = useFormContext();
   const { errors } = formState;
   const dayLabels = {
-    Sun: 'S',
     Mon: 'M',
     Tue: 'T',
     Wed: 'W',
     Thu: 'T',
     Fri: 'F',
-    Sat: 'S',
   };
   const [existingTime, setExisingTime] = useState<string[]>();
   // All data for this AvailabilityInput instance will be saved in the form's
@@ -74,11 +72,12 @@ const AvailabilityInput = ({
   }, []);
 
   useEffect(() => {
-    // Register day selector as custom form input. 
-    //Not putting error message here since there is no default behavior to override
-    register(`${instance}.days`, { 
-      required: !hide, 
-      validate: () => {return hide? true : days.length > 0}});
+    // Register day selector as custom form input.
+    // Not putting error message here since there is no default behavior to override
+    register(`${instance}.days`, {
+      required: !hide,
+      validate: () => (hide ? true : days.length > 0),
+    });
   }, [instance, register, days, hide]);
 
   useEffect(() => {
@@ -100,35 +99,35 @@ const AvailabilityInput = ({
           type='time'
           className={styles.timeInput}
           defaultValue={existingTime?.[0]}
-          ref={register({ required: !hide})}
+          ref={register({ required: !hide })}
         />
-        {errors.availability && errors.availability[index] && 
-          errors.availability[index].startTime &&  
-          <p className={styles.error}>Please enter a valid start time</p>
-        }  
-        </div>
+        {errors.availability && errors.availability[index]
+          && errors.availability[index].startTime
+          && <p className={styles.error}>Please enter a valid start time</p>
+        }
+      </div>
       <p className={styles.toText}>to</p>
       <div className={styles.timeFlexbox}>
-      <SRLabel htmlFor={`${instance}.endTime`}>End Time</SRLabel>
-      <Input
-        id={`${instance}.endTime`}
-        name={`${instance}.endTime`}
-        type='time'
-        className={styles.timeInput}
-        defaultValue={existingTime?.[1]}
-        ref={register({
-          required: !hide,
-          validate: (endTime) => {
-            const startTime = getValues(`${instance}.startTime`);
-            return hide? true : startTime < endTime;
-          },
-        })}
-      />
-        {errors.availability && errors.availability[index] && 
-          errors.availability[index].endTime &&
-          <p className={styles.error}>Please enter a valid end time</p> 
-        }    
-        </div>
+        <SRLabel htmlFor={`${instance}.endTime`}>End Time</SRLabel>
+        <Input
+          id={`${instance}.endTime`}
+          name={`${instance}.endTime`}
+          type='time'
+          className={styles.timeInput}
+          defaultValue={existingTime?.[1]}
+          ref={register({
+            required: !hide,
+            validate: (endTime) => {
+              const startTime = getValues(`${instance}.startTime`);
+              return hide ? true : startTime < endTime;
+            },
+          })}
+        />
+        {errors.availability && errors.availability[index]
+          && errors.availability[index].endTime
+          && <p className={styles.error}>Please enter a valid end time</p>
+        }
+      </div>
       <p className={styles.repeatText}>Repeat on</p>
       <div className={styles.timeFlexbox}>
         <div className={styles.daysBox}>
@@ -146,10 +145,10 @@ const AvailabilityInput = ({
             />
           ))}
         </div>
-        {errors.availability && errors.availability[index] && 
-            errors.availability[index].days &&  
-            <p className={cn(styles.error, styles.dayError)}>Please select at least one day</p>
-          }    
+        {errors.availability && errors.availability[index]
+          && errors.availability[index].days
+          && <p className={cn(styles.error, styles.dayError)}>Please select at least one day</p>
+        }
       </div>
     </div>
   );
