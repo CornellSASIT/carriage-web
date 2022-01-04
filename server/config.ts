@@ -1,7 +1,9 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-dotenv.config({ path: path.join(__dirname, '.env') });
+//dotenv.config({ path: path.join(__dirname, '.env') });
+// mg223 has done this and it seems to break config.env pathing, amazingly
+dotenv.config();
 
 export default {
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,

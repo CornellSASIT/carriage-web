@@ -30,4 +30,5 @@ WORKDIR /usr/src/app
 ENTRYPOINT ["/usr/src/app/secrets-entrypoint.sh"]
 
 CMD ["node",  "server/build/app.js"]
+RUN echo $REACT_APP_PUBLIC_VAPID_KEY
 
